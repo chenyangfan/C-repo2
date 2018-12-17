@@ -1,0 +1,166 @@
+
+#include<errno.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<sys/types.h>
+char *recent[41];
+char HISTORY[10000];
+int commandNum =0;
+char *HISTORY2[41];
+int  recentFlag = 0;
+void main(){
+  printf("Before execlp*****\n");
+  char *argv[41]={NULL};
+  int should_run = 1;
+  //int recentFlag = 0;
+  //& indicates that the parent wait for the child to terminates
+  //by default, parent doesn't wait 
+  int hasAmp = 0;
+  pid_t pid;
+  
+  while(should_run){
+    printf("CSCI312O>");
+    //HISTORY2[commandNum] = str;
+    //commandNum++;
+    //Use this String to store the string to accept user input
+    char str[256];
+    scanf("%[^\n]%*c",str);
+    
+    if(strcmp(str,"history") == 0||strcmp(str,"!!")==0){
+      //printf("history;");
+      char *split = strtok(HISTORY,",");
+      int i = 0;
+      HISTORY2[i] = split;
+      i++;
+      while( split != NULL){
+	split = strtok(NULL,",");
+	if (split != NULL ){
+	  HISTORY2[i] = split;
+	  //printf("%d\t",i+1);
+	
+	  i++;
+	}
+      }
+      printf("\n");
+      HISTORY2[i] = NULL;
+      for(int j = i - 1; j >= 0;j--){
+	 printf("%d\t",j+1);
+	 puts(HISTORY2[j]);
+	 printf("\n");
+      }
+      recent[0] = HISTORY2[i-1];
+      //strcat(HISTORY,str);
+      //strcat(HISTORY,",");
+      //strcat(HISTORY,str);
+    }
+    //strcat(HISTORY,str);
+    //strcat(HISTORY,",");
+     printf("%s\nand recent %s",HISTORY,recent[0]);
+    
+    if(strcmp(str,"!!")==0){
+      recentFlag = 1;
+      //int i = 0;
+      
+     }
+    if(strcmp(str,"history")!=0&&strcmp(str,"!!")!=0){
+    //word equals to the first word of string seperated by space character 
+      //strcat(HISTORY,str);
+      //strcat(HISTORY,",");
+    char *word = strtok(str," ");
+    int i = 0;
+    argv[i] = word;
+    //recent[i] = word;
+    i++;
+    
+    //Seperate all the words of the command and put them in the correct order
+    while(word != NULL){
+      word = strtok(NULL," ");
+      argv[i] = word;
+      //recent[i] = word;
+      //printf("%skm",recent[i]);
+      i++;
+    }
+    
+    //indicates the end of commands
+    argv[i]=NULL;
+    //recent[i]=NULL;
+    // printf("recent %s:",recent[0]);
+    
+    //need to delete the & symbol, since execvp doesn't accept this symbol
+    //and set the hasAmp flag equals to one
+    if(strcmp(argv[i-2],"&") == 0){
+      argv[ i - 2 ] = NULL;
+      hasAmp=1;
+    }
+    strcat(HISTORY,str);
+    strcat(HISTORY,",");
+    //strcat(HISTORY,str);
+    }
+    //forking(*argv);
+    //fork here
+     pid = fork();
+    
+    if(pid < 0) {
+      printf("Fork failed");//fork fails if pid < 0
+      exit(EXIT_FAILURE);
+    }
+
+    else if(pid > 0 ){
+      // struct Node* command = (struct Node*)malloc(sizeof(struct Node));
+      //command->num = ++commandNum;
+      // command->commandName = str;
+      //command->next = head;
+      //head = command;
+      if(hasAmp){
+	wait(NULL);
+	//struct Node* command = (struct Node*)malloc(sizeof(struct Node));
+	//command->num = ++commandNum;
+	//command->commandName = str;
+	//command->next = head;
+	//head = command;
+	//printList(head);
+      }
+      else{
+	printf("Parent doesn't wait for child to finish.\n.");
+
+      }
+
+    }
+    else if(pid == 0){
+      if(recentFlag){
+	int i = 0;
+	printf("%s is a bug\n",recent[0]);
+	char *split = strtok(recent[0]," ");
+	argv[0] = split;
+	i++;
+	
+	while(split != NULL){
+	  split = strtok(NULL," ");
+	  if(split != NULL){
+	    argv[i] = split;
+	  }
+	  //printf(""
+	  i++;
+	}
+	printf("\n");
+	recentFlag = 0;
+	argv[i] = NULL;
+      }
+      //recentFlag = 0;
+      if(execvp(argv[0],argv) == -1){
+	should_run = 0;
+	recentFlag = 0;
+      }else{
+	printf("\n");
+	recentFlag = 0;
+      }
+    }
+      
+   
+  
+     printf("after execlp****\n");
+  }
+  printf("Program finished!.\n");
+  exit(0);
+}
